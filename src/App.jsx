@@ -17,6 +17,28 @@ const FunnelCalculator = () => {
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [animate, setAnimate] = useState(false);
 
+  const colors = ['#E76F51', '#F4A261', '#E9C46A', '#2A9D8F', '#264653', '#023047', '#219EBC', '#8ECAE6'];
+
+  const addStage = () => {
+    if (stages.length < 8) {
+      const newStage = {
+        name: `Stage ${stages.length + 1}`,
+        value: 0,
+        rate: 0,
+        color: colors[stages.length % colors.length],
+        editing: false
+      };
+      setStages([...stages, newStage]);
+    }
+  };
+
+  const removeStage = (index) => {
+    if (stages.length > 2) {
+      const newStages = stages.filter((_, i) => i !== index);
+      setStages(newStages);
+    }
+  };
+
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'decimal',
     minimumFractionDigits: 2,
@@ -36,6 +58,16 @@ const FunnelCalculator = () => {
     setTotalRevenue(updatedStages[updatedStages.length - 1].value * revenue);
     setAnimate(true);
     setTimeout(() => setAnimate(false), 500);
+  };
+
+  const handleAddStage = () => {
+    addStage();
+    setTimeout(calculateFunnel, 0);
+  };
+
+  const handleRemoveStage = (index) => {
+    removeStage(index);
+    setTimeout(calculateFunnel, 0);
   };
 
   const handleInputChange = (index, field, value) => {
@@ -118,7 +150,7 @@ const FunnelCalculator = () => {
               x="50%"
               y={`${index * (100 / stages.length) + (50 / stages.length)}%`}
               textAnchor="middle"
-              fill="black"
+              fill="white"
               fontSize="3"
               fontWeight="bold"
               className={animate ? 'funnel-text' : ''}
@@ -177,8 +209,16 @@ const FunnelCalculator = () => {
                 placeholder="Enter percentage"
               />
             </div>
+            {index > 1 && (
+              <Button onClick={() => handleRemoveStage(index)} variant="destructive" className="mt-2">
+                Remove Stage
+              </Button>
+            )}
           </div>
         ))}
+        <Button onClick={handleAddStage} variant="outline" className="w-full">
+          Add Stage
+        </Button>
         <div className="flex flex-col space-y-2 bg-white bg-opacity-50 p-4 rounded-md">
           <label className="font-semibold">Revenue per Customer ($):</label>
           <Input
