@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -18,7 +18,7 @@ const FunnelCalculator = () => {
 
   const colors = ['#E76F51', '#F4A261', '#E9C46A', '#2A9D8F', '#264653', '#023047', '#219EBC', '#8ECAE6', '#FFB703', '#FB8500'];
 
-  const addStage = () => {
+  const addStage = useCallback(() => {
     if (stages.length < 10) {
       const newStage = {
         name: `Stage ${stages.length + 1}`,
@@ -27,16 +27,15 @@ const FunnelCalculator = () => {
         color: colors[stages.length % colors.length],
         editing: false,
       };
-      setStages([...stages.slice(0, -1), newStage, stages[stages.length - 1]]);
+      setStages(prevStages => [...prevStages.slice(0, -1), newStage, prevStages[prevStages.length - 1]]);
     }
-  };
+  }, [stages.length]);
 
-  const removeStage = (index) => {
+  const removeStage = useCallback((index) => {
     if (stages.length > 2 && index !== 0 && index !== stages.length - 1) {
-      const newStages = stages.filter((_, i) => i !== index);
-      setStages(newStages);
+      setStages(prevStages => prevStages.filter((_, i) => i !== index));
     }
-  };
+  }, [stages.length]);
 
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'decimal',
@@ -44,33 +43,35 @@ const FunnelCalculator = () => {
     maximumFractionDigits: 2,
   });
 
-  useEffect(() => {
-    calculateFunnel();
-  }, [stages, revenue]);
+  const calculateFunnel = useCallback(() => {
+    setStages(prevStages => {
+      let updatedStages = [...prevStages];
+      for (let i = 1; i < updatedStages.length; i++) {
+        updatedStages[i].value = Math.round((updatedStages[i-1].value * updatedStages[i-1].rate) / 100);
+      }
+      return updatedStages;
+    });
+    setTotalRevenue(prevTotalRevenue => stages[stages.length - 1].value * revenue);
+  }, [revenue, stages]);
 
   useEffect(() => {
-    // Check if there's a significant change in the funnel data
+    calculateFunnel();
+  }, [calculateFunnel]);
+
+  useEffect(() => {
     const hasSignificantChange = stages.some((stage, index) => {
       const prevStage = prevStagesRef.current[index];
-      return Math.abs(stage.value - prevStage.value) > prevStage.value * 0.05; // 5% threshold
+      return prevStage && Math.abs(stage.value - prevStage.value) > prevStage.value * 0.05; // 5% threshold
     });
 
     if (hasSignificantChange) {
       setShouldAnimate(true);
-      setTimeout(() => setShouldAnimate(false), 500);
+      const timer = setTimeout(() => setShouldAnimate(false), 500);
+      return () => clearTimeout(timer);
     }
 
     prevStagesRef.current = stages;
   }, [stages]);
-
-  const calculateFunnel = () => {
-    let updatedStages = [...stages];
-    for (let i = 1; i < updatedStages.length; i++) {
-      updatedStages[i].value = Math.round((updatedStages[i-1].value * updatedStages[i-1].rate) / 100);
-    }
-    setStages(updatedStages);
-    setTotalRevenue(updatedStages[updatedStages.length - 1].value * revenue);
-  };
 
   const handleInputChange = (index, field, value) => {
     const updatedStages = [...stages];
