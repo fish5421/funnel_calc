@@ -7,8 +7,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 const FunnelCalculator = () => {
   const [stages, setStages] = useState([
     { name: 'Visitors', value: 1000, rate: 20, color: '#E76F51', editing: false },
-    { name: 'Leads', value: 0, rate: 10, color: '#F4A261', editing: false },
-    { name: 'Opportunities', value: 0, rate: 5, color: '#E9C46A', editing: false },
     { name: 'Customers', value: 0, rate: 100, color: '#2A9D8F', editing: false },
   ]);
 
@@ -17,6 +15,28 @@ const FunnelCalculator = () => {
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const prevStagesRef = useRef(stages);
+
+  const colors = ['#E76F51', '#F4A261', '#E9C46A', '#2A9D8F', '#264653', '#023047', '#219EBC', '#8ECAE6', '#FFB703', '#FB8500'];
+
+  const addStage = () => {
+    if (stages.length < 10) {
+      const newStage = {
+        name: `Stage ${stages.length + 1}`,
+        value: 0,
+        rate: 100,
+        color: colors[stages.length % colors.length],
+        editing: false,
+      };
+      setStages([...stages.slice(0, -1), newStage, stages[stages.length - 1]]);
+    }
+  };
+
+  const removeStage = (index) => {
+    if (stages.length > 2 && index !== 0 && index !== stages.length - 1) {
+      const newStages = stages.filter((_, i) => i !== index);
+      setStages(newStages);
+    }
+  };
 
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'decimal',
@@ -163,7 +183,7 @@ const FunnelCalculator = () => {
       <CardContent className="space-y-4 p-6">
         <Alert>
           <AlertDescription>
-            This calculator helps you visualize and optimize your conversion funnel. Enter the number of visitors and conversion rates for each stage. The tool will automatically calculate the flow through your funnel and the total revenue based on your inputs.
+            This calculator helps you visualize and optimize your conversion funnel. Enter the number of visitors and conversion rates for each stage. You can add up to 10 stages and remove stages as needed. The tool will automatically calculate the flow through your funnel and the total revenue based on your inputs.
           </AlertDescription>
         </Alert>
         {stages.map((stage, index) => (
@@ -200,8 +220,18 @@ const FunnelCalculator = () => {
                 placeholder="Enter percentage"
               />
             </div>
+            {index !== 0 && index !== stages.length - 1 && (
+              <Button onClick={() => removeStage(index)} className="mt-2 bg-red-500 hover:bg-red-600 text-white">
+                Remove Stage
+              </Button>
+            )}
           </div>
         ))}
+        {stages.length < 10 && (
+          <Button onClick={addStage} className="mt-4 bg-green-500 hover:bg-green-600 text-white">
+            Add Stage
+          </Button>
+        )}
         <div className="flex flex-col space-y-2 bg-white bg-opacity-50 p-4 rounded-md">
           <label className="font-semibold">Revenue per Customer ($):</label>
           <Input 
