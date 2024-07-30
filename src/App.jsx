@@ -135,8 +135,8 @@ const FunnelCalculator = () => {
       </style>
       {stages.map((stage, index) => {
         const height = 100 / stages.length;
-        const topWidth = 100 - (index * (100 / stages.length));
-        const bottomWidth = 100 - ((index + 1) * (100 / stages.length));
+        const topWidth = 100 - (index * (80 / stages.length));
+        const bottomWidth = 100 - ((index + 1) * (80 / stages.length));
         return (
           <g key={index} className={animate ? 'funnel-section' : ''} style={{ animationDelay: `${index * 0.1}s` }}>
             <path
