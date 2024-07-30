@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -15,29 +15,8 @@ const FunnelCalculator = () => {
   const [revenue, setRevenue] = useState(100);
   const [revenueInput, setRevenueInput] = useState('100.00');
   const [totalRevenue, setTotalRevenue] = useState(0);
-  const [animate, setAnimate] = useState(false);
-
-  const colors = ['#E76F51', '#F4A261', '#E9C46A', '#2A9D8F', '#264653', '#023047', '#219EBC', '#8ECAE6'];
-
-  const addStage = () => {
-    if (stages.length < 8) {
-      const newStage = {
-        name: `Stage ${stages.length + 1}`,
-        value: 0,
-        rate: 0,
-        color: colors[stages.length % colors.length],
-        editing: false
-      };
-      setStages([...stages, newStage]);
-    }
-  };
-
-  const removeStage = (index) => {
-    if (stages.length > 2) {
-      const newStages = stages.filter((_, i) => i !== index);
-      setStages(newStages);
-    }
-  };
+  const [shouldAnimate, setShouldAnimate] = useState(false);
+  const prevStagesRef = useRef(stages);
 
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'decimal',
@@ -49,25 +28,28 @@ const FunnelCalculator = () => {
     calculateFunnel();
   }, [stages, revenue]);
 
+  useEffect(() => {
+    // Check if there's a significant change in the funnel data
+    const hasSignificantChange = stages.some((stage, index) => {
+      const prevStage = prevStagesRef.current[index];
+      return Math.abs(stage.value - prevStage.value) > prevStage.value * 0.05; // 5% threshold
+    });
+
+    if (hasSignificantChange) {
+      setShouldAnimate(true);
+      setTimeout(() => setShouldAnimate(false), 500);
+    }
+
+    prevStagesRef.current = stages;
+  }, [stages]);
+
   const calculateFunnel = () => {
     let updatedStages = [...stages];
     for (let i = 1; i < updatedStages.length; i++) {
-      updatedStages[i].value = Math.round((updatedStages[i - 1].value * updatedStages[i - 1].rate) / 100);
+      updatedStages[i].value = Math.round((updatedStages[i-1].value * updatedStages[i-1].rate) / 100);
     }
     setStages(updatedStages);
     setTotalRevenue(updatedStages[updatedStages.length - 1].value * revenue);
-    setAnimate(true);
-    setTimeout(() => setAnimate(false), 500);
-  };
-
-  const handleAddStage = () => {
-    addStage();
-    setTimeout(calculateFunnel, 0);
-  };
-
-  const handleRemoveStage = (index) => {
-    removeStage(index);
-    setTimeout(calculateFunnel, 0);
   };
 
   const handleInputChange = (index, field, value) => {
@@ -129,16 +111,26 @@ const FunnelCalculator = () => {
             from { opacity: 0; transform: scale(0.8); }
             to { opacity: 1; transform: scale(1); }
           }
-          .funnel-section { animation: fadeInScale 0.5s ease-out forwards; }
-          .funnel-text { animation: fadeInScale 0.5s ease-out 0.2s forwards; }
+          .funnel-section {
+            transition: all 0.5s ease-out;
+          }
+          .funnel-section.animate {
+            animation: fadeInScale 0.5s ease-out forwards;
+          }
+          .funnel-text {
+            transition: all 0.5s ease-out;
+          }
+          .funnel-text.animate {
+            animation: fadeInScale 0.5s ease-out 0.2s forwards;
+          }
         `}
       </style>
       {stages.map((stage, index) => {
         const height = 100 / stages.length;
-        const topWidth = 100 - (index * (80 / stages.length));
-        const bottomWidth = 100 - ((index + 1) * (80 / stages.length));
+        const topWidth = 100 - (index * (100 / stages.length));
+        const bottomWidth = 100 - ((index + 1) * (100 / stages.length));
         return (
-          <g key={index} className={animate ? 'funnel-section' : ''} style={{ animationDelay: `${index * 0.1}s` }}>
+          <g key={index} className={`funnel-section ${shouldAnimate ? 'animate' : ''}`}>
             <path
               d={`M${(100 - topWidth) / 2},${index * height} 
                  L${(100 + topWidth) / 2},${index * height} 
@@ -150,11 +142,10 @@ const FunnelCalculator = () => {
               x="50%"
               y={`${index * (100 / stages.length) + (50 / stages.length)}%`}
               textAnchor="middle"
-              fill="white"
+              fill="black"
               fontSize="3"
               fontWeight="bold"
-              className={animate ? 'funnel-text' : ''}
-              style={{ animationDelay: `${index * 0.1 + 0.2}s` }}
+              className={`funnel-text ${shouldAnimate ? 'animate' : ''}`}
             >
               {stage.name}: {stage.value}
             </text>
@@ -179,7 +170,7 @@ const FunnelCalculator = () => {
           <div key={index} className="flex flex-col space-y-2 bg-white bg-opacity-50 p-4 rounded-md">
             <div className="flex items-center space-x-2">
               <label className="w-1/3 font-semibold">Stage Name:</label>
-              <Input
+              <Input 
                 value={stage.name}
                 onChange={(e) => handleInputChange(index, 'name', e.target.value)}
                 className="w-2/3 border-2 border-gray-300 focus:border-blue-500"
@@ -188,7 +179,7 @@ const FunnelCalculator = () => {
             </div>
             <div className="flex items-center space-x-2">
               <label className="w-1/3 font-semibold">{index === 0 ? 'Number of Visitors:' : 'Calculated Value:'}</label>
-              <Input
+              <Input 
                 type="number"
                 value={stage.value}
                 onChange={(e) => handleInputChange(index, 'value', e.target.value)}
@@ -199,7 +190,7 @@ const FunnelCalculator = () => {
             </div>
             <div className="flex items-center space-x-2">
               <label className="w-1/3 font-semibold">Conversion Rate (%):</label>
-              <Input
+              <Input 
                 type="number"
                 value={stage.editing ? stage.rate : (stage.rate === '' ? '' : stage.rate.toString())}
                 onChange={(e) => handleInputChange(index, 'rate', e.target.value)}
@@ -209,19 +200,11 @@ const FunnelCalculator = () => {
                 placeholder="Enter percentage"
               />
             </div>
-            {index > 1 && (
-              <Button onClick={() => handleRemoveStage(index)} variant="destructive" className="mt-2">
-                Remove Stage
-              </Button>
-            )}
           </div>
         ))}
-        <Button onClick={handleAddStage} variant="outline" className="w-full">
-          Add Stage
-        </Button>
         <div className="flex flex-col space-y-2 bg-white bg-opacity-50 p-4 rounded-md">
           <label className="font-semibold">Revenue per Customer ($):</label>
-          <Input
+          <Input 
             type="text"
             value={revenueInput}
             onChange={handleRevenueChange}
