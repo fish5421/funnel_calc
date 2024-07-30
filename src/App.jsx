@@ -51,12 +51,15 @@ const FunnelCalculator = () => {
       }
       return updatedStages;
     });
-    setTotalRevenue(prevTotalRevenue => stages[stages.length - 1].value * revenue);
-  }, [revenue, stages]);
+  }, []);
 
   useEffect(() => {
     calculateFunnel();
-  }, [calculateFunnel]);
+  }, [calculateFunnel, stages[0].value, ...stages.map(stage => stage.rate)]);
+
+  useEffect(() => {
+    setTotalRevenue(stages[stages.length - 1].value * revenue);
+  }, [stages, revenue]);
 
   useEffect(() => {
     const hasSignificantChange = stages.some((stage, index) => {
