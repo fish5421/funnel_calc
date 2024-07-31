@@ -213,7 +213,9 @@ const FunnelCalculator = () => {
               />
             </div>
             <div className="flex items-center space-x-2">
-              <label className="w-1/3 font-semibold">{index === 0 ? 'Number of Visitors:' : 'Calculated Value:'}</label>
+              <label className="w-1/3 font-semibold">
+                {index === 0 ? 'Number of Visitors:' : index === stages.length - 1 ? 'Number of Customers:' : 'Calculated Value:'}
+              </label>
               <Input 
                 type="number"
                 value={stage.value}
