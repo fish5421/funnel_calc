@@ -175,7 +175,7 @@ const FunnelCalculator = () => {
               y={`${index * (100 / stages.length) + (50 / stages.length)}%`}
               textAnchor="middle"
               fill="black"
-              fontSize="4"
+              fontSize="5"
               fontWeight="bold"
               className={`funnel-text ${shouldAnimate ? 'animate' : ''}`}
             >
@@ -186,7 +186,7 @@ const FunnelCalculator = () => {
               y={`${index * (100 / stages.length) + (50 / stages.length)}%`}
               textAnchor="start"
               fill="black"
-              fontSize="3"
+              fontSize="4"
               fontWeight="bold"
               className={`funnel-text ${shouldAnimate ? 'animate' : ''}`}
             >
