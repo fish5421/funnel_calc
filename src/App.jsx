@@ -18,6 +18,7 @@ const FunnelCalculator = () => {
   ]);
 
   const [revenue, setRevenue] = useState(100);
+  const revenueInputRef = useRef(null);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const prevStagesRef = useRef(stages);
@@ -118,9 +119,20 @@ const FunnelCalculator = () => {
   };
 
   const handleRevenueChange = (e) => {
-    const value = e.target.value.replace(/[^0-9.]/g, '');
+    const input = e.target;
+    const cursorPosition = input.selectionStart;
+    const value = input.value.replace(/[^0-9.]/g, '');
     const numericValue = parseFloat(value);
-    setRevenue(isNaN(numericValue) ? '' : Math.max(0, numericValue));
+    const newValue = isNaN(numericValue) ? '' : Math.max(0, numericValue);
+    
+    setRevenue(newValue);
+
+    // Use setTimeout to ensure the DOM has updated
+    setTimeout(() => {
+      const formattedLength = currencyFormatter.format(newValue).length;
+      const newCursorPosition = cursorPosition + (formattedLength - input.value.length);
+      input.setSelectionRange(newCursorPosition, newCursorPosition);
+    }, 0);
   };
 
   const FunnelVisualization = () => (
@@ -243,6 +255,7 @@ const FunnelCalculator = () => {
             onChange={handleRevenueChange}
             className="w-full border-2 border-gray-300 focus:border-blue-500"
             placeholder="Enter amount"
+            ref={revenueInputRef}
           />
         </div>
         <div className="text-2xl font-bold text-center bg-white bg-opacity-70 p-4 rounded-lg shadow-inner">
