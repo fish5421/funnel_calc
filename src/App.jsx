@@ -25,8 +25,16 @@ const FunnelCalculator = () => {
   const colors = ['#E76F51', '#F4A261', '#E9C46A', '#2A9D8F', '#264653', '#023047', '#219EBC', '#8ECAE6', '#FFB703', '#FB8500'];
 
   const formatter = new Intl.NumberFormat('en-US', {
-    style: 'decimal',
+    style: 'currency',
+    currency: 'USD',
     minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  const currencyFormatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   });
 
@@ -110,8 +118,9 @@ const FunnelCalculator = () => {
   };
 
   const handleRevenueChange = (e) => {
-    const value = e.target.value;
-    setRevenue(value === '' ? '' : Math.max(0, parseFloat(value) || 0));
+    const value = e.target.value.replace(/[^0-9.]/g, '');
+    const numericValue = parseFloat(value);
+    setRevenue(isNaN(numericValue) ? '' : Math.max(0, numericValue));
   };
 
   const FunnelVisualization = () => (
@@ -227,15 +236,13 @@ const FunnelCalculator = () => {
           </Button>
         )}
         <div className="flex flex-col space-y-2 bg-white bg-opacity-50 p-4 rounded-md">
-          <label className="font-semibold">Revenue per Customer ($):</label>
+          <label className="font-semibold">Revenue per Customer:</label>
           <Input
-            type="number"
-            value={revenue}
+            type="text"
+            value={revenue === '' ? '' : currencyFormatter.format(revenue)}
             onChange={handleRevenueChange}
             className="w-full border-2 border-gray-300 focus:border-blue-500"
             placeholder="Enter amount"
-            min="0"
-            step="0.01"
           />
         </div>
         <div className="text-2xl font-bold text-center bg-white bg-opacity-70 p-4 rounded-lg shadow-inner">
