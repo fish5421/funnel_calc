@@ -93,7 +93,9 @@ const FunnelCalculator = () => {
         const numValue = parseFloat(value);
         updatedStages[index].rate = isNaN(numValue) ? 0 : Math.max(0, Math.min(100, numValue));
       } else if (field === 'value' && index === 0) {
-        updatedStages[index].value = Math.max(0, parseInt(value) || 0);
+        // Remove leading zeros and parse as integer
+        const cleanedValue = value.replace(/^0+/, '');
+        updatedStages[index].value = Math.max(0, parseInt(cleanedValue) || 0);
       } else if (field === 'name') {
         updatedStages[index].name = value.trim();
       }
@@ -102,7 +104,8 @@ const FunnelCalculator = () => {
   };
 
   const handleRevenueChange = (e) => {
-    const value = parseFloat(e.target.value);
+    const cleanedValue = e.target.value.replace(/^0+/, '');
+    const value = parseFloat(cleanedValue);
     setRevenue(isNaN(value) ? 0 : value);
   };
 
