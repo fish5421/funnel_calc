@@ -14,7 +14,7 @@ import {
 const FunnelCalculator = () => {
   const [stages, setStages] = useState([
     { name: 'Visitors', value: 1000, rate: 20, color: '#E76F51', editing: false },
-    { name: 'Customers', value: 0, rate: 100, color: '#2A9D8F', editing: false },
+    { name: 'Customers', value: 0, color: '#2A9D8F', editing: false },
   ]);
 
   const [revenue, setRevenue] = useState(100);
@@ -45,9 +45,16 @@ const FunnelCalculator = () => {
       for (let i = 1; i < updatedStages.length; i++) {
         const prevValue = updatedStages[i-1].value;
         const prevRate = updatedStages[i-1].rate;
-        updatedStages[i].value = (prevValue === '' || prevRate === '') 
-          ? '' 
-          : Math.round((prevValue * prevRate) / 100);
+        if (i === updatedStages.length - 1) {
+          // For the last stage, just use the previous stage's calculated value
+          updatedStages[i].value = (prevValue === '' || prevRate === '') 
+            ? '' 
+            : Math.round((prevValue * prevRate) / 100);
+        } else {
+          updatedStages[i].value = (prevValue === '' || prevRate === '') 
+            ? '' 
+            : Math.round((prevValue * prevRate) / 100);
+        }
       }
       return updatedStages;
     });
@@ -233,19 +240,21 @@ const FunnelCalculator = () => {
                 disabled={index !== 0}
               />
             </div>
-            <div className="flex items-center space-x-2">
-              <label className="w-1/3 font-semibold">Conversion Rate (%):</label>
-              <Input 
-                type="number"
-                value={stage.rate}
-                onChange={(e) => handleInputChange(index, 'rate', e.target.value)}
-                className="w-2/3 border-2 border-gray-300 focus:border-blue-500"
-                placeholder="Enter percentage"
-                min="0"
-                max="100"
-                step="0.1"
-              />
-            </div>
+            {index !== stages.length - 1 && (
+              <div className="flex items-center space-x-2">
+                <label className="w-1/3 font-semibold">Conversion Rate (%):</label>
+                <Input 
+                  type="number"
+                  value={stage.rate}
+                  onChange={(e) => handleInputChange(index, 'rate', e.target.value)}
+                  className="w-2/3 border-2 border-gray-300 focus:border-blue-500"
+                  placeholder="Enter percentage"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                />
+              </div>
+            )}
             {index !== 0 && index !== stages.length - 1 && (
               <div className="flex justify-end mt-2">
                 <RemoveStageIcon onClick={() => removeStage(index)} />
