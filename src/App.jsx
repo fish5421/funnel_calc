@@ -23,7 +23,7 @@ const FunnelCalculator = () => {
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const prevStagesRef = useRef(stages);
 
-  const colors = ['#E76F51', '#F4A261', '#E9C46A', '#2A9D8F', '#264653', '#023047', '#219EBC', '#8ECAE6', '#FFB703', '#FB8500'];
+  const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F9ED69', '#F08A5D', '#B83B5E', '#6A2C70', '#08D9D6'];
 
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
