@@ -3,6 +3,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Trash2 } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const FunnelCalculator = () => {
   const [stages, setStages] = useState([
@@ -225,9 +232,9 @@ const FunnelCalculator = () => {
               />
             </div>
             {index !== 0 && index !== stages.length - 1 && (
-              <Button onClick={() => removeStage(index)} className="mt-2 bg-red-500 hover:bg-red-600 text-white">
-                Remove Stage
-              </Button>
+              <div className="flex justify-end mt-2">
+                <RemoveStageIcon onClick={() => removeStage(index)} />
+              </div>
             )}
           </div>
         ))}
@@ -255,5 +262,23 @@ const FunnelCalculator = () => {
     </Card>
   );
 };
+
+const RemoveStageIcon = ({ onClick }) => (
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={onClick}
+          className="p-1 rounded-full hover:bg-red-100 transition-colors duration-200"
+        >
+          <Trash2 className="w-4 h-4 text-red-500" />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>Remove this stage</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
 
 export default FunnelCalculator;
