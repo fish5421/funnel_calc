@@ -34,9 +34,13 @@ const FunnelCalculator = () => {
         color: colors[stages.length % colors.length],
         editing: false,
       };
-      setStages(prevStages => [...prevStages.slice(0, -1), newStage, prevStages[prevStages.length - 1]]);
+      setStages(prevStages => {
+        const newStages = [...prevStages.slice(0, -1), newStage, prevStages[prevStages.length - 1]];
+        setTimeout(() => calculateFunnel(), 0);
+        return newStages;
+      });
     }
-  }, [stages.length]);
+  }, [stages.length, calculateFunnel]);
 
   const removeStage = useCallback((index) => {
     if (stages.length > 2 && index !== 0 && index !== stages.length - 1) {
