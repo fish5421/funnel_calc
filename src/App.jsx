@@ -136,7 +136,7 @@ const FunnelCalculator = () => {
   };
 
   const FunnelVisualization = () => (
-    <svg viewBox="0 0 100 100" className="w-full h-64 mt-4">
+    <svg viewBox="0 0 150 100" className="w-full h-64 mt-4">
       <style>
         {`
           @keyframes fadeInScale {
@@ -179,7 +179,18 @@ const FunnelCalculator = () => {
               fontWeight="bold"
               className={`funnel-text ${shouldAnimate ? 'animate' : ''}`}
             >
-              {stage.name}: {stage.value}
+              {stage.value}
+            </text>
+            <text
+              x="105"
+              y={`${index * (100 / stages.length) + (50 / stages.length)}%`}
+              textAnchor="start"
+              fill="black"
+              fontSize="3"
+              fontWeight="bold"
+              className={`funnel-text ${shouldAnimate ? 'animate' : ''}`}
+            >
+              {stage.name}
             </text>
           </g>
         );
