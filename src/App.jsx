@@ -259,7 +259,7 @@ const FunnelCalculator = () => {
           />
         </div>
         <div className="text-2xl font-bold text-center bg-white bg-opacity-70 p-4 rounded-lg shadow-inner">
-          Total Revenue: ${formatter.format(totalRevenue)}
+          Total Revenue: {formatter.format(totalRevenue)}
         </div>
         <FunnelVisualization />
       </CardContent>
