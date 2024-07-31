@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
-import { NumericFormat } from 'react-number-format';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -19,7 +18,6 @@ const FunnelCalculator = () => {
   ]);
 
   const [revenue, setRevenue] = useState(100);
-  const [revenueInput, setRevenueInput] = useState('100.00');
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const prevStagesRef = useRef(stages);
@@ -89,46 +87,23 @@ const FunnelCalculator = () => {
   }, [stages]);
 
   const handleInputChange = (index, field, value) => {
-    const updatedStages = [...stages];
-    if (field === 'rate') {
-      if (value === '' || isNaN(value)) {
-        updatedStages[index].rate = '';
-        updatedStages[index].editing = true;
-      } else {
+    setStages(prevStages => {
+      const updatedStages = [...prevStages];
+      if (field === 'rate') {
         const numValue = parseFloat(value);
-        updatedStages[index].rate = Math.max(0, Math.min(100, numValue));
-        updatedStages[index].editing = false;
+        updatedStages[index].rate = isNaN(numValue) ? 0 : Math.max(0, Math.min(100, numValue));
+      } else if (field === 'value' && index === 0) {
+        updatedStages[index].value = Math.max(0, parseInt(value) || 0);
+      } else if (field === 'name') {
+        updatedStages[index].name = value.trim();
       }
-    } else if (field === 'value' && index === 0) {
-      updatedStages[index].value = Math.max(0, parseInt(value) || 0);
-    } else if (field === 'name') {
-      updatedStages[index].name = value.trim();
-    }
-    setStages(updatedStages);
+      return updatedStages;
+    });
   };
 
-  const handleRateBlur = (index) => {
-    const updatedStages = [...stages];
-    if (updatedStages[index].rate === '') {
-      updatedStages[index].rate = 0;
-    }
-    updatedStages[index].editing = false;
-    setStages(updatedStages);
-  };
-
-  const handleRateFocus = (index) => {
-    const updatedStages = [...stages];
-    if (updatedStages[index].rate === 0) {
-      updatedStages[index].rate = '';
-    }
-    updatedStages[index].editing = true;
-    setStages(updatedStages);
-  };
-
-  const handleRevenueChange = (values) => {
-    const { floatValue } = values;
-    setRevenue(floatValue || 0);
-    setRevenueInput(values.value);
+  const handleRevenueChange = (e) => {
+    const value = parseFloat(e.target.value);
+    setRevenue(isNaN(value) ? 0 : value);
   };
 
   const FunnelVisualization = () => (
@@ -222,12 +197,13 @@ const FunnelCalculator = () => {
               <label className="w-1/3 font-semibold">Conversion Rate (%):</label>
               <Input 
                 type="number"
-                value={stage.editing ? stage.rate : (stage.rate === '' ? '' : stage.rate.toString())}
+                value={stage.rate}
                 onChange={(e) => handleInputChange(index, 'rate', e.target.value)}
-                onFocus={() => handleRateFocus(index)}
-                onBlur={() => handleRateBlur(index)}
                 className="w-2/3 border-2 border-gray-300 focus:border-blue-500"
                 placeholder="Enter percentage"
+                min="0"
+                max="100"
+                step="0.1"
               />
             </div>
             {index !== 0 && index !== stages.length - 1 && (
@@ -244,16 +220,14 @@ const FunnelCalculator = () => {
         )}
         <div className="flex flex-col space-y-2 bg-white bg-opacity-50 p-4 rounded-md">
           <label className="font-semibold">Revenue per Customer ($):</label>
-          <NumericFormat
-            customInput={Input}
-            value={revenueInput}
-            onValueChange={handleRevenueChange}
-            thousandSeparator={true}
-            decimalScale={2}
-            fixedDecimalScale={true}
-            prefix="$"
+          <Input
+            type="number"
+            value={revenue}
+            onChange={handleRevenueChange}
             className="w-full border-2 border-gray-300 focus:border-blue-500"
             placeholder="Enter amount"
+            min="0"
+            step="0.01"
           />
         </div>
         <div className="text-2xl font-bold text-center bg-white bg-opacity-70 p-4 rounded-lg shadow-inner">
