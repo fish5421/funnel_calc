@@ -34,7 +34,11 @@ const FunnelCalculator = () => {
     setStages(prevStages => {
       let updatedStages = [...prevStages];
       for (let i = 1; i < updatedStages.length; i++) {
-        updatedStages[i].value = Math.round((updatedStages[i-1].value * updatedStages[i-1].rate) / 100);
+        const prevValue = updatedStages[i-1].value;
+        const prevRate = updatedStages[i-1].rate;
+        updatedStages[i].value = (prevValue === '' || prevRate === '') 
+          ? '' 
+          : Math.round((prevValue * prevRate) / 100);
       }
       return updatedStages;
     });
@@ -68,7 +72,10 @@ const FunnelCalculator = () => {
   }, [calculateFunnel, stages[0].value, ...stages.map(stage => stage.rate)]);
 
   useEffect(() => {
-    setTotalRevenue(stages[stages.length - 1].value * revenue);
+    const lastStageValue = stages[stages.length - 1].value;
+    setTotalRevenue(
+      lastStageValue === '' || revenue === '' ? 0 : lastStageValue * revenue
+    );
   }, [stages, revenue]);
 
   useEffect(() => {
@@ -91,11 +98,10 @@ const FunnelCalculator = () => {
       const updatedStages = [...prevStages];
       if (field === 'rate') {
         const numValue = parseFloat(value);
-        updatedStages[index].rate = isNaN(numValue) ? 0 : Math.max(0, Math.min(100, numValue));
+        updatedStages[index].rate = isNaN(numValue) ? '' : Math.max(0, Math.min(100, numValue));
       } else if (field === 'value' && index === 0) {
-        // Remove leading zeros and parse as integer
-        const cleanedValue = value.replace(/^0+/, '');
-        updatedStages[index].value = Math.max(0, parseInt(cleanedValue) || 0);
+        // Allow empty input or non-negative integers
+        updatedStages[index].value = value === '' ? '' : Math.max(0, parseInt(value) || 0);
       } else if (field === 'name') {
         updatedStages[index].name = value.trim();
       }
@@ -104,9 +110,8 @@ const FunnelCalculator = () => {
   };
 
   const handleRevenueChange = (e) => {
-    const cleanedValue = e.target.value.replace(/^0+/, '');
-    const value = parseFloat(cleanedValue);
-    setRevenue(isNaN(value) ? 0 : value);
+    const value = e.target.value;
+    setRevenue(value === '' ? '' : Math.max(0, parseFloat(value) || 0));
   };
 
   const FunnelVisualization = () => (
