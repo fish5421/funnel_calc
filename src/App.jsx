@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -19,6 +19,8 @@ const FunnelCalculator = () => {
 
   const [revenue, setRevenue] = useState(100);
   const [revenueInput, setRevenueInput] = useState('100.00');
+  const [unformattedRevenue, setUnformattedRevenue] = useState('100.00');
+  const revenueInputRef = useRef(null);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const prevStagesRef = useRef(stages);
@@ -125,18 +127,41 @@ const FunnelCalculator = () => {
   };
 
   const handleRevenueChange = (e) => {
-    const value = e.target.value.replace(/[^0-9.]/g, '');
-    setRevenueInput(value);
-    const newRevenue = parseFloat(value);
+    const { value, selectionStart } = e.target;
+    const unformatted = value.replace(/[^0-9.]/g, '');
+    setUnformattedRevenue(unformatted);
+    
+    const newRevenue = parseFloat(unformatted);
     if (!isNaN(newRevenue)) {
       setRevenue(newRevenue);
+      setRevenueInput(formatter.format(newRevenue));
+    } else {
+      setRevenueInput(value);
     }
+
+    // Schedule cursor position update
+    setTimeout(() => {
+      const input = revenueInputRef.current;
+      if (input) {
+        input.setSelectionRange(selectionStart, selectionStart);
+      }
+    }, 0);
   };
 
   const handleRevenueBlur = () => {
     const formattedRevenue = formatter.format(revenue);
     setRevenueInput(formattedRevenue);
+    setUnformattedRevenue(revenue.toString());
   };
+
+  useLayoutEffect(() => {
+    const input = revenueInputRef.current;
+    if (input) {
+      const selectionStart = input.selectionStart;
+      input.value = revenueInput;
+      input.setSelectionRange(selectionStart, selectionStart);
+    }
+  }, [revenueInput]);
 
   const FunnelVisualization = () => (
     <svg viewBox="0 0 100 100" className="w-full h-64 mt-4">
@@ -253,7 +278,8 @@ const FunnelCalculator = () => {
           <label className="font-semibold">Revenue per Customer ($):</label>
           <Input 
             type="text"
-            value={revenueInput}
+            ref={revenueInputRef}
+            defaultValue={revenueInput}
             onChange={handleRevenueChange}
             onBlur={handleRevenueBlur}
             className="w-full border-2 border-gray-300 focus:border-blue-500"
