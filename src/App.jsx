@@ -25,6 +25,22 @@ const FunnelCalculator = () => {
 
   const colors = ['#E76F51', '#F4A261', '#E9C46A', '#2A9D8F', '#264653', '#023047', '#219EBC', '#8ECAE6', '#FFB703', '#FB8500'];
 
+  const formatter = new Intl.NumberFormat('en-US', {
+    style: 'decimal',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  const calculateFunnel = useCallback(() => {
+    setStages(prevStages => {
+      let updatedStages = [...prevStages];
+      for (let i = 1; i < updatedStages.length; i++) {
+        updatedStages[i].value = Math.round((updatedStages[i-1].value * updatedStages[i-1].rate) / 100);
+      }
+      return updatedStages;
+    });
+  }, []);
+
   const addStage = useCallback(() => {
     if (stages.length < 10) {
       const newStage = {
@@ -47,22 +63,6 @@ const FunnelCalculator = () => {
       setStages(prevStages => prevStages.filter((_, i) => i !== index));
     }
   }, [stages.length]);
-
-  const formatter = new Intl.NumberFormat('en-US', {
-    style: 'decimal',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-
-  const calculateFunnel = useCallback(() => {
-    setStages(prevStages => {
-      let updatedStages = [...prevStages];
-      for (let i = 1; i < updatedStages.length; i++) {
-        updatedStages[i].value = Math.round((updatedStages[i-1].value * updatedStages[i-1].rate) / 100);
-      }
-      return updatedStages;
-    });
-  }, []);
 
   useEffect(() => {
     calculateFunnel();
