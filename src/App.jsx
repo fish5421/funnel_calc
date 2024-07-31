@@ -136,7 +136,7 @@ const FunnelCalculator = () => {
   };
 
   const FunnelVisualization = () => (
-    <svg viewBox="0 0 150 100" className="w-full h-64 mt-4">
+    <svg viewBox="0 0 200 100" className="w-full h-64 mt-4">
       <style>
         {`
           @keyframes fadeInScale {
@@ -159,19 +159,19 @@ const FunnelCalculator = () => {
       </style>
       {stages.map((stage, index) => {
         const height = 100 / stages.length;
-        const topWidth = 100 - (index * (100 / stages.length));
-        const bottomWidth = 100 - ((index + 1) * (100 / stages.length));
+        const topWidth = 80 - (index * (80 / stages.length));
+        const bottomWidth = 80 - ((index + 1) * (80 / stages.length));
         return (
           <g key={index} className={`funnel-section ${shouldAnimate ? 'animate' : ''}`}>
             <path
-              d={`M${(100 - topWidth) / 2},${index * height} 
-                 L${(100 + topWidth) / 2},${index * height} 
-                 L${(100 + bottomWidth) / 2},${(index + 1) * height} 
-                 L${(100 - bottomWidth) / 2},${(index + 1) * height} Z`}
+              d={`M${(80 - topWidth) / 2},${index * height} 
+                 L${(80 + topWidth) / 2},${index * height} 
+                 L${(80 + bottomWidth) / 2},${(index + 1) * height} 
+                 L${(80 - bottomWidth) / 2},${(index + 1) * height} Z`}
               fill={stage.color}
             />
             <text
-              x="50%"
+              x="40"
               y={`${index * (100 / stages.length) + (50 / stages.length)}%`}
               textAnchor="middle"
               fill="black"
@@ -182,7 +182,7 @@ const FunnelCalculator = () => {
               {stage.value}
             </text>
             <text
-              x="105"
+              x="90"
               y={`${index * (100 / stages.length) + (50 / stages.length)}%`}
               textAnchor="start"
               fill="black"
